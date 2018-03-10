@@ -33,7 +33,7 @@ const applySet = (context, address, name, value) => (possibleAddressValues) => {
         let stateName = stateValue[name]
         if (stateName) {
             throw new InvalidTransaction(
-                `Verb s "set" but Name already in state, Name: ${name} Value: ${stateName}`
+                `Wallet Name is already in state, Name: ${name} Value: ${stateName}`
             )
         }
     }
