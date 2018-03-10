@@ -4,7 +4,7 @@ const { InvalidTransaction, InternalError } = require('sawtooth-sdk/processor/ex
 
 
 const hash = (x) =>
-  crypto.createHash('sha512').update(x).digest('hex').toLowerCase()
+    crypto.createHash('sha512').update(x).digest('hex').toLowerCase()
 
 const decodeCbor = (buffer) =>
     new Promise((resolve, reject) =>
@@ -28,31 +28,56 @@ const applySet = (context, address, name, value) => (possibleAddressValues) => {
     console.log(stateValueRep);
     let stateValue
     if (stateValueRep && stateValueRep.length > 0) {
-      stateValue = cbor.decodeFirstSync(stateValueRep)
-      console.log(stateValue)
-      let stateName = stateValue[name]
-      if (stateName) {
-        throw new InvalidTransaction(
-          `Verb s "set" but Name already in state, Name: ${name} Value: ${stateName}`
-        )
-      }
+        stateValue = cbor.decodeFirstSync(stateValueRep)
+        console.log(stateValue)
+        let stateName = stateValue[name]
+        if (stateName) {
+            throw new InvalidTransaction(
+                `Verb s "set" but Name already in state, Name: ${name} Value: ${stateName}`
+            )
+        }
     }
-  
+
     // 'set' passes checks so store it in the state
     if (!stateValue) {
-      stateValue = {}
+        stateValue = {}
     }
-  
+
     stateValue[name] = value
-  
+
     return setEntry(context, address, stateValue)
-  }
-  
+}
+
+const updateSet = (context, address, name, value) => (possibleAddressValues) => {
+    let stateValueRep = possibleAddressValues[address]
+    console.log(stateValueRep);
+    let stateValue
+    if (stateValueRep && stateValueRep.length > 0) {
+        stateValue = cbor.decodeFirstSync(stateValueRep)
+        console.log(stateValue)
+        let stateName = stateValue[name]
+        if (stateName) {
+            // 'set' passes checks so store it in the state
+            if (!stateValue) {
+                stateValue = {}
+            }
+            stateValue[name] = value
+
+            return setEntry(context, address, stateValue)
+        } else {
+            throw new InvalidTransaction(
+                `Verb s "set" but Name already in state, Name: ${name} Value: ${stateName}`
+            )
+        }
+    }
+}
+
 
 module.exports = {
     decodeCbor,
     hash,
     toInternalError,
     setEntry,
-    applySet
+    applySet,
+    updateSet
 }
